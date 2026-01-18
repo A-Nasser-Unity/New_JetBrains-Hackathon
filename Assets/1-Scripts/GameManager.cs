@@ -53,10 +53,11 @@ public class GameManager : MonoBehaviour
 
     [Header("AI Settings")]
     public float aiHitChance = 0.75f;
-    public float aiScorePerHit = 10f;
-    public float aiDecisionInterval = 0.4f;
+    public float aiPerfectScore = 15f;
+    public float aiGoodScore = 10f;
+    [Range(0f, 1f)]
+    public float aiPerfectChance = 0.5f; // Chance AI gets perfect vs good when it hits
     public float aiStartDelay = 3f;
-    private float aiTimer = 0f;
     private float aiDelayTimer = 0f;
     private bool aiCanScore = false;
 
@@ -88,7 +89,6 @@ public class GameManager : MonoBehaviour
         HandleTimer();
         UpdateCarPositions();
         HandleAIDelay();
-        HandleAI();
         HandleFeedbackTimer();
     }
 
@@ -143,20 +143,26 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void HandleAI()
+    // NEW METHOD: AI attempts to score when a note crosses the hit line
+    public void AIAttemptScore()
     {
         if (!aiCanScore) return;
 
-        aiTimer -= Time.deltaTime;
-        if (aiTimer <= 0f)
+        // Roll to see if AI hits or misses this note
+        if (Random.value <= aiHitChance)
         {
-            aiTimer = aiDecisionInterval;
-            if (Random.value <= aiHitChance)
+            // AI hits the note - now determine if it's perfect or good
+            if (Random.value <= aiPerfectChance)
             {
-                aiScore += (int)aiScorePerHit;
-                UpdateScoreUI();
+                aiScore += (int)aiPerfectScore;
             }
+            else
+            {
+                aiScore += (int)aiGoodScore;
+            }
+            UpdateScoreUI();
         }
+        // If Random.value > aiHitChance, AI misses (no score added)
     }
 
     void UpdateCarPositions()
@@ -252,7 +258,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // ✅ UPDATED METHOD
     public void AddPlayerScore(int amount, string hitQuality)
     {
         if (hitQuality == "Perfect")
@@ -279,7 +284,7 @@ public class GameManager : MonoBehaviour
             if (enableMissPenalty)
             {
                 playerScore -= Mathf.RoundToInt(missPenaltyAmount);
-                playerScore = Mathf.Max(0, playerScore); // clamp
+                playerScore = Mathf.Max(0, playerScore);
             }
         }
 

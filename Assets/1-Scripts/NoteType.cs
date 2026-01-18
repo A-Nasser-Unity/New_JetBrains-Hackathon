@@ -120,6 +120,8 @@ public class Note : MonoBehaviour
             return;
         }
 
+        // AI attempts to score before note is destroyed
+        GameManager.instance.AIAttemptScore();
         Destroy(gameObject);
     }
 
@@ -150,6 +152,8 @@ public class Note : MonoBehaviour
             hasBeenHit = true;
         }
 
+        // AI attempts to score before note is destroyed
+        GameManager.instance.AIAttemptScore();
         Destroy(gameObject);
     }
 }
